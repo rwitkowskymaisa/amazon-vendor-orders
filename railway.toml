@@ -1,6 +1,5 @@
 [build]
 builder = "NIXPACKS"
-watchPatterns = ["amazon-vendor-orders/**"]
 
 [deploy]
 startCommand = "cd amazon-vendor-orders && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
