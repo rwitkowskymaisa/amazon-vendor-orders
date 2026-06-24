@@ -232,7 +232,10 @@
       <div class="card">
         <div class="card-header">
           <h2 id="titulo-lista">Pedidos pendentes de validação</h2>
+        
           <button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="carregarPedidos()">↻ Atualizar</button>
+        <button class="btn btn-verde" style="padding:8px 16px;font-size:13px" onclick="sincronizarAmazon()">⬇ Sincronizar Amazon</button>
+          
         </div>
         <div class="card-body" id="corpo-lista">
           <div class="loading"><div class="spinner"></div><br>Carregando pedidos...</div>
@@ -556,6 +559,23 @@ function toast(msg, tipo) {
 if (token && usuario) {
   entrarApp();
 }
+
+async function sincronizarAmazon() {
+  toast('Buscando pedidos na Amazon...', '');
+  try {
+    const r = await fetch(`${API}/amazon/sincronizar`, {
+      method: 'POST',
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Erro');
+    toast(`${data.pedidos_novos} pedido(s) novo(s) recebido(s)!`, 'verde');
+    setTimeout(carregarPedidos, 1000);
+  } catch(e) {
+    toast(`Erro: ${e.message}`, 'vermelho');
+  }
+}
+
 </script>
 </body>
 </html>
