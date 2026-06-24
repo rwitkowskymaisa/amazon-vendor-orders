@@ -21,3 +21,4 @@ def health():
 def root():
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/static/index.html")
+# Sistema de Pedidos Amazon - Grupo A Educacao v1.0
