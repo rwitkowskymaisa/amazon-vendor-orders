@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos Amazon – Grupo A Educação</title>
+<style>
+  :root {
+    --azul: #1a3a5c;
+    --azul-claro: #2d6da8;
+    --verde: #27ae60;
+    --vermelho: #e74c3c;
+    --amarelo: #f39c12;
+    --cinza: #f4f6f8;
+    --borda: #dce3ea;
+    --texto: #2c3e50;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--cinza); color: var(--texto); font-size: 14px; }
+
+  /* LOGIN */
+  #tela-login {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--azul);
+  }
+  .login-box {
+    background: white; border-radius: 12px; padding: 40px; width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .login-box h1 { color: var(--azul); font-size: 20px; margin-bottom: 4px; }
+  .login-box p { color: #666; font-size: 12px; margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; }
+  .form-group input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 6px; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: var(--azul-claro); }
+  .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--azul-claro); color: white; width: 100%; padding: 12px; }
+  .btn-verde { background: var(--verde); color: white; }
+  .btn-vermelho { background: var(--vermelho); color: white; }
+  .btn-amarelo { background: var(--amarelo); color: white; }
+  .btn-cinza { background: #95a5a6; color: white; }
+  .msg-erro { background: #fdecea; color: var(--vermelho); padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
+
+  /* APP */
+  #app { display: none; }
+  header {
+    background: var(--azul); color: white; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between; height: 56px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header h1 { font-size: 16px; font-weight: 700; }
+  header .usuario { font-size: 13px; opacity: 0.85; }
+  .btn-sair { background: rgba(255,255,255,0.15); color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .btn-sair:hover { background: rgba(255,255,255,0.25); }
+
+  main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+  /* CARDS */
+  .card { background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--borda); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h2 { font-size: 15px; color: var(--azul); }
+  .card-body { padding: 20px; }
+
+  /* BADGE */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .badge-pendente { background: #fef3cd; color: #856404; }
+  .badge-urgente { background: #fdecea; color: var(--vermelho); }
+  .badge-validado { background: #d4edda; color: #155724; }
+  .badge-enviado { background: #cce5ff; color: #004085; }
+
+  /* TABELA */
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--azul); color: white; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--borda); font-size: 13px; vertical-align: middle; }
+  tr:hover td { background: #f8fafc; }
+  .link-pedido { color: var(--azul-claro); cursor: pointer; font-weight: 600; text-decoration: underline; }
+  .link-pedido:hover { color: var(--azul); }
+
+  /* PRAZO */
+  .prazo-ok { color: var(--verde); font-weight: 600; }
+  .prazo-alerta { color: var(--amarelo); font-weight: 600; }
+  .prazo-urgente { color: var(--vermelho); font-weight: 700; }
+
+  /* DETALHE PEDIDO */
+  #tela-detalhe { display: none; }
+  .btn-voltar { background: none; border: 1px solid var(--borda); color: var(--texto); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; margin-bottom: 16px; }
+  .btn-voltar:hover { background: var(--borda); }
+
+  .info-pedido {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px;
+  }
+  .info-item { background: white; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .info-item label { display: block; font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
+  .info-item span { font-size: 15px; font-weight: 700; color: var(--azul); }
+
+  /* ITENS */
+  .item-card {
+    background: white; border-radius: 8px; border: 1px solid var(--borda); margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .item-header {
+    padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+    border-radius: 8px; transition: background 0.15s;
+  }
+  .item-header:hover { background: #f8fafc; }
+  .item-isbn { font-family: monospace; font-size: 12px; color: #666; min-width: 100px; }
+  .item-nome { flex: 1; font-weight: 600; }
+  .item-editora { color: #888; font-size: 12px; }
+  .item-qtda { font-weight: 700; color: var(--azul); min-width: 60px; text-align: center; }
+  .item-rota { min-width: 80px; text-align: center; }
+  .rota-poa { color: #1a6f3c; font-weight: 700; font-size: 12px; background: #d4edda; padding: 2px 8px; border-radius: 10px; }
+  .rota-pod { color: #7d4e00; font-weight: 700; font-size: 12px; background: #fff3cd; padding: 2px 8px; border-radius: 10px; }
+  .item-alerta { color: var(--vermelho); font-size: 11px; max-width: 200px; }
+  .item-decisao { min-width: 110px; text-align: center; }
+
+  .item-body { padding: 0 16px 16px; display: none; }
+  .item-body.aberto { display: block; }
+
+  .decisao-area { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .decisao-opcoes { display: flex; gap: 8px; }
+  .radio-btn input { display: none; }
+  .radio-btn label {
+    padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+    border: 2px solid var(--borda); color: #555; transition: all 0.15s; display: block;
+  }
+  .radio-btn input:checked + label { border-color: transparent; }
+  .radio-aceito input:checked + label { background: var(--verde); color: white; }
+  .radio-parcial input:checked + label { background: var(--amarelo); color: white; }
+  .radio-rejeitado input:checked + label { background: var(--vermelho); color: white; }
+
+  .campo-qtda-aceita { display: none; }
+  .campo-qtda-aceita input {
+    width: 100px; padding: 6px 10px; border: 1px solid var(--borda); border-radius: 6px;
+    font-size: 13px; margin-left: 8px;
+  }
+  .campo-data { display: none; }
+  .campo-data input {
+    padding: 6px 10px; border: 1px solid var(--borda); border-radius: 6px; font-size: 13px; margin-left: 8px;
+  }
+  .campo-motivo { display: none; }
+  .campo-motivo textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--borda); border-radius: 6px;
+    font-size: 13px; margin-top: 8px; resize: vertical; min-height: 60px;
+  }
+
+  .detalhes-item {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+    background: var(--cinza); border-radius: 6px; padding: 12px; margin-bottom: 12px; font-size: 12px;
+  }
+  .detalhe-campo label { color: #888; display: block; margin-bottom: 2px; }
+  .detalhe-campo span { font-weight: 600; }
+  .alerta-desc { background: #fdecea; border-left: 3px solid var(--vermelho); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 12px; color: #c0392b; }
+  .especial-desc { background: #fff3cd; border-left: 3px solid var(--amarelo); padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 12px; color: #7d4e00; }
+
+  /* BARRA AÇÕES */
+  .barra-acoes {
+    position: sticky; bottom: 0; background: white; border-top: 2px solid var(--borda);
+    padding: 14px 24px; display: flex; gap: 12px; align-items: center; justify-content: flex-end;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  }
+  .contagem { font-size: 13px; color: #666; margin-right: auto; }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 40px; color: #888; }
+  .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--borda); border-top-color: var(--azul-claro); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: #2c3e50; color: white;
+    padding: 14px 20px; border-radius: 8px; font-size: 13px; z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); display: none; max-width: 320px;
+  }
+  .toast.verde { background: var(--verde); }
+  .toast.vermelho { background: var(--vermelho); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--borda); margin-bottom: 20px; }
+  .tab { padding: 10px 20px; cursor: pointer; font-size: 13px; font-weight: 600; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tab.ativa { color: var(--azul-claro); border-bottom-color: var(--azul-claro); }
+  .tab:hover { color: var(--azul); }
+
+  @media (max-width: 600px) {
+    main { padding: 12px; }
+    .info-pedido { grid-template-columns: 1fr 1fr; }
+    .decisao-opcoes { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA LOGIN -->
+<div id="tela-login">
+  <div class="login-box">
+    <h1>📦 Pedidos Amazon</h1>
+    <p>Grupo A Educação — Sistema de validação</p>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="email" placeholder="seu@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="senha" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()" />
+    </div>
+    <button class="btn btn-primary" onclick="login()">Entrar</button>
+    <div class="msg-erro" id="msg-erro"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <h1>📦 Pedidos Amazon — Validador</h1>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span class="usuario" id="nome-usuario"></span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <!-- LISTA DE PEDIDOS -->
+  <div id="tela-lista">
+    <main>
+      <div class="tabs">
+        <div class="tab ativa" onclick="filtrarStatus('pendente', this)">Pendentes</div>
+        <div class="tab" onclick="filtrarStatus('validado', this)">Validados</div>
+        <div class="tab" onclick="filtrarStatus('enviado', this)">Enviados</div>
+        <div class="tab" onclick="filtrarStatus('todos', this)">Todos</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 id="titulo-lista">Pedidos pendentes de validação</h2>
+          <button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="carregarPedidos()">↻ Atualizar</button>
+        </div>
+        <div class="card-body" id="corpo-lista">
+          <div class="loading"><div class="spinner"></div><br>Carregando pedidos...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- DETALHE DO PEDIDO -->
+  <div id="tela-detalhe">
+    <main>
+      <button class="btn-voltar" onclick="voltarLista()">← Voltar à lista</button>
+
+      <div class="info-pedido" id="info-pedido"></div>
+
+      <div class="card" style="margin-bottom:80px">
+        <div class="card-header">
+          <h2>Itens do Pedido</h2>
+          <span id="resumo-itens" style="font-size:12px;color:#888"></span>
+        </div>
+        <div class="card-body" id="corpo-itens">
+          <div class="loading"><div class="spinner"></div><br>Carregando itens...</div>
+        </div>
+      </div>
+
+      <div class="barra-acoes">
+        <span class="contagem" id="contagem-decisoes"></span>
+        <button class="btn btn-cinza" onclick="aceitarTodos()">✓ Aceitar todos</button>
+        <button class="btn btn-verde" onclick="salvarValidacao()">Salvar validação</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://astonishing-art-production-c589.up.railway.app';
+let token = localStorage.getItem('token');
+let usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+let pedidoAtual = null;
+let itensAtuais = [];
+let todosPedidos = [];
+let filtroAtivo = 'pendente';
+
+// ============ AUTH ============
+async function login() {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value;
+  const erro = document.getElementById('msg-erro');
+  erro.style.display = 'none';
+  if (!email || !senha) { mostrarErro('Preencha e-mail e senha.'); return; }
+  try {
+    const r = await fetch(`${API}/auth/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: senha})
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    token = data.access_token;
+    usuario = data.usuario;
+    localStorage.setItem('token', token);
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    entrarApp();
+  } catch {
+    mostrarErro('E-mail ou senha inválidos.');
+  }
+}
+
+function mostrarErro(msg) {
+  const el = document.getElementById('msg-erro');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function sair() {
+  localStorage.removeItem('token'); localStorage.removeItem('usuario');
+  token = null; usuario = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('tela-login').style.display = 'flex';
+}
+
+function entrarApp() {
+  document.getElementById('tela-login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nome-usuario').textContent = usuario.nome || usuario.email;
+  carregarPedidos();
+}
+
+// ============ PEDIDOS ============
+async function carregarPedidos() {
+  document.getElementById('corpo-lista').innerHTML = '<div class="loading"><div class="spinner"></div><br>Carregando pedidos...</div>';
+  try {
+    const r = await fetch(`${API}/pedidos/`, {headers: {'Authorization': `Bearer ${token}`}});
+    if (r.status === 401) { sair(); return; }
+    todosPedidos = await r.json();
+    renderizarLista();
+  } catch {
+    document.getElementById('corpo-lista').innerHTML = '<div class="loading">Erro ao carregar pedidos. Verifique a conexão.</div>';
+  }
+}
+
+function filtrarStatus(status, el) {
+  filtroAtivo = status;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
+  el.classList.add('ativa');
+  const titulos = {pendente:'Pedidos pendentes de validação', validado:'Pedidos validados', enviado:'Pedidos enviados à Amazon', todos:'Todos os pedidos'};
+  document.getElementById('titulo-lista').textContent = titulos[status];
+  renderizarLista();
+}
+
+function renderizarLista() {
+  const lista = filtroAtivo === 'todos' ? todosPedidos : todosPedidos.filter(p => p.status_interno === filtroAtivo);
+  if (!lista.length) {
+    document.getElementById('corpo-lista').innerHTML = '<div class="loading">Nenhum pedido encontrado.</div>';
+    return;
+  }
+  const html = `<table>
+    <thead><tr>
+      <th>Pedido Amazon</th><th>Loja</th><th>Prazo Acknowledgment</th><th>Status</th><th>Ação</th>
+    </tr></thead>
+    <tbody>${lista.map(p => {
+      const prazo = p.prazo_acknowledgment ? new Date(p.prazo_acknowledgment) : null;
+      const agora = new Date();
+      const horas = prazo ? Math.round((prazo - agora) / 3600000) : null;
+      let prazoHtml = '—';
+      if (horas !== null) {
+        if (horas < 0) prazoHtml = `<span class="prazo-urgente">⚠ Expirado</span>`;
+        else if (horas < 12) prazoHtml = `<span class="prazo-urgente">⚠ ${horas}h restantes</span>`;
+        else if (horas < 24) prazoHtml = `<span class="prazo-alerta">⏰ ${horas}h restantes</span>`;
+        else prazoHtml = `<span class="prazo-ok">✓ ${Math.round(horas/24)}d restantes</span>`;
+      }
+      const badgeClass = {pendente:'badge-pendente', validado:'badge-validado', enviado:'badge-enviado', em_analise:'badge-pendente'}[p.status_interno] || 'badge-pendente';
+      const statusLabel = {pendente:'Pendente', validado:'Validado', enviado:'Enviado', em_analise:'Em análise', expirado:'Expirado'}[p.status_interno] || p.status_interno;
+      return `<tr>
+        <td><span class="link-pedido" onclick="abrirPedido(${p.id})">${p.pedido_amazon}</span></td>
+        <td>${p.loja || '—'}</td>
+        <td>${prazoHtml}</td>
+        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+        <td><button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="abrirPedido(${p.id})">Revisar</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+  document.getElementById('corpo-lista').innerHTML = html;
+}
+
+// ============ DETALHE ============
+async function abrirPedido(id) {
+  pedidoAtual = todosPedidos.find(p => p.id === id);
+  document.getElementById('tela-lista').style.display = 'none';
+  document.getElementById('tela-detalhe').style.display = 'block';
+
+  // Info do pedido
+  const prazo = pedidoAtual.prazo_acknowledgment ? new Date(pedidoAtual.prazo_acknowledgment).toLocaleString('pt-BR') : '—';
+  document.getElementById('info-pedido').innerHTML = `
+    <div class="info-item"><label>Pedido Amazon</label><span>${pedidoAtual.pedido_amazon}</span></div>
+    <div class="info-item"><label>Loja</label><span>${pedidoAtual.loja || '—'}</span></div>
+    <div class="info-item"><label>Prazo Ack.</label><span style="font-size:13px">${prazo}</span></div>
+    <div class="info-item"><label>Status</label><span>${pedidoAtual.status_interno}</span></div>
+  `;
+
+  // Itens
+  document.getElementById('corpo-itens').innerHTML = '<div class="loading"><div class="spinner"></div><br>Carregando itens...</div>';
+  try {
+    const r = await fetch(`${API}/pedidos/${id}/itens`, {headers: {'Authorization': `Bearer ${token}`}});
+    itensAtuais = await r.json();
+    renderizarItens();
+  } catch {
+    document.getElementById('corpo-itens').innerHTML = '<div class="loading">Erro ao carregar itens.</div>';
+  }
+}
+
+function renderizarItens() {
+  document.getElementById('resumo-itens').textContent = `${itensAtuais.length} itens`;
+  atualizarContagem();
+  if (!itensAtuais.length) {
+    document.getElementById('corpo-itens').innerHTML = '<div class="loading">Nenhum item encontrado.</div>';
+    return;
+  }
+  const html = itensAtuais.map((item, i) => {
+    const rota = item.rota === 'sp_pod'
+      ? '<span class="rota-pod">SP/POD</span>'
+      : '<span class="rota-poa">POA</span>';
+    const alertaHtml = item.alerta_desconto ? `<span class="item-alerta" title="${item.alerta_desconto}">⚠ ${item.alerta_desconto.substring(0,40)}${item.alerta_desconto.length>40?'...':''}</span>` : '';
+    const decisaoAtual = item.decisao || '';
+    const icone = decisaoAtual === 'aceito' ? '✅' : decisaoAtual === 'rejeitado' ? '❌' : decisaoAtual === 'aceito_parcial' ? '⚠️' : '⭕';
+    return `<div class="item-card" id="item-card-${i}">
+      <div class="item-header" onclick="toggleItem(${i})">
+        <span style="font-size:18px">${icone}</span>
+        <span class="item-isbn">${item.isbn || '—'}</span>
+        <span class="item-nome">${item.nome_produto || 'Produto não identificado'}</span>
+        <span class="item-editora">${item.editora || ''}</span>
+        ${alertaHtml}
+        <span class="item-rota">${rota}</span>
+        <span class="item-qtda">${item.qtda_solicitada || 0} un</span>
+      </div>
+      <div class="item-body" id="item-body-${i}">
+        <div class="detalhes-item">
+          <div class="detalhe-campo"><label>ISBN</label><span>${item.isbn || '—'}</span></div>
+          <div class="detalhe-campo"><label>Qtda Solicitada</label><span>${item.qtda_solicitada || 0} un</span></div>
+          <div class="detalhe-campo"><label>Custo Unit.</label><span>${item.custo_unitario ? 'R$ '+Number(item.custo_unitario).toFixed(2) : '—'}</span></div>
+          <div class="detalhe-campo"><label>Estoque Disp.</label><span>${item.estoque_disponivel ?? '—'}</span></div>
+          <div class="detalhe-campo"><label>Status Produto</label><span>${item.status_produto || '—'}</span></div>
+          <div class="detalhe-campo"><label>Desconto Amazon</label><span>${item.desconto_amazon ? (item.desconto_amazon*100).toFixed(1)+'%' : '—'}</span></div>
+          <div class="detalhe-campo"><label>Rota</label><span>${item.rota === 'sp_pod' ? 'SP – POD' : 'POA – Estoque'}</span></div>
+          <div class="detalhe-campo"><label>Status Desconto</label><span>${item.status_desconto || '—'}</span></div>
+        </div>
+        ${item.alerta_desconto ? `<div class="alerta-desc">⚠ ${item.alerta_desconto}</div><br>` : ''}
+        ${item.status_desconto === 'especial' ? `<div class="especial-desc">📧 Desconto especial — confirmar por e-mail antes de aceitar</div><br>` : ''}
+
+        <div class="decisao-area">
+          <strong style="font-size:13px">Decisão:</strong>
+          <div class="decisao-opcoes">
+            <div class="radio-btn radio-aceito">
+              <input type="radio" name="dec-${i}" id="ac-${i}" value="aceito" ${decisaoAtual==='aceito'?'checked':''} onchange="onDecisao(${i},'aceito')">
+              <label for="ac-${i}">✓ Aceitar</label>
+            </div>
+            <div class="radio-btn radio-parcial">
+              <input type="radio" name="dec-${i}" id="pc-${i}" value="aceito_parcial" ${decisaoAtual==='aceito_parcial'?'checked':''} onchange="onDecisao(${i},'aceito_parcial')">
+              <label for="pc-${i}">◑ Aceitar parcial</label>
+            </div>
+            <div class="radio-btn radio-rejeitado">
+              <input type="radio" name="dec-${i}" id="rj-${i}" value="rejeitado" ${decisaoAtual==='rejeitado'?'checked':''} onchange="onDecisao(${i},'rejeitado')">
+              <label for="rj-${i}">✕ Rejeitar</label>
+            </div>
+          </div>
+          <div class="campo-qtda-aceita" id="qtda-${i}" style="${decisaoAtual==='aceito_parcial'?'display:flex;align-items:center':'display:none'}">
+            <label>Qtda aceita:</label>
+            <input type="number" id="qtda-val-${i}" min="1" max="${item.qtda_solicitada}" value="${item.qtda_aceita||''}" placeholder="Qtda" onchange="itensAtuais[${i}].qtda_aceita=this.value">
+          </div>
+          <div class="campo-data" id="data-${i}" style="${(decisaoAtual==='aceito'||decisaoAtual==='aceito_parcial')?'display:flex;align-items:center':'display:none'}">
+            <label>Data envio prevista:</label>
+            <input type="date" id="data-val-${i}" value="${item.data_envio_prevista||''}" onchange="itensAtuais[${i}].data_envio_prevista=this.value">
+          </div>
+        </div>
+        <div class="campo-motivo" id="motivo-${i}" style="${decisaoAtual==='rejeitado'?'display:block':'display:none'}">
+          <label style="font-size:12px;font-weight:600">Motivo da rejeição:</label>
+          <textarea id="motivo-val-${i}" placeholder="Informe o motivo..." onchange="itensAtuais[${i}].motivo_rejeicao=this.value">${item.motivo_rejeicao||''}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('corpo-itens').innerHTML = html;
+}
+
+function toggleItem(i) {
+  const body = document.getElementById(`item-body-${i}`);
+  body.classList.toggle('aberto');
+}
+
+function onDecisao(i, valor) {
+  itensAtuais[i].decisao = valor;
+  itensAtuais[i].codigo_rejeicao = valor === 'aceito' ? 'AC' : valor === 'aceito_parcial' ? 'IC' : 'R2';
+  document.getElementById(`qtda-${i}`).style.display = valor === 'aceito_parcial' ? 'flex' : 'none';
+  document.getElementById(`data-${i}`).style.display = (valor === 'aceito' || valor === 'aceito_parcial') ? 'flex' : 'none';
+  document.getElementById(`motivo-${i}`).style.display = valor === 'rejeitado' ? 'block' : 'none';
+  // Atualiza ícone
+  const icone = valor === 'aceito' ? '✅' : valor === 'rejeitado' ? '❌' : '⚠️';
+  document.querySelector(`#item-card-${i} .item-header span:first-child`).textContent = icone;
+  atualizarContagem();
+}
+
+function atualizarContagem() {
+  const total = itensAtuais.length;
+  const com = itensAtuais.filter(it => it.decisao).length;
+  document.getElementById('contagem-decisoes').textContent = `${com} de ${total} itens com decisão`;
+}
+
+function aceitarTodos() {
+  itensAtuais.forEach((item, i) => {
+    item.decisao = 'aceito';
+    item.codigo_rejeicao = 'AC';
+    const radio = document.getElementById(`ac-${i}`);
+    if (radio) { radio.checked = true; onDecisao(i, 'aceito'); }
+  });
+  toast('Todos os itens marcados como aceitos.', 'verde');
+}
+
+async function salvarValidacao() {
+  const semDecisao = itensAtuais.filter(it => !it.decisao);
+  if (semDecisao.length > 0) {
+    toast(`${semDecisao.length} item(s) sem decisão. Defina aceitar ou rejeitar para todos.`, 'vermelho');
+    return;
+  }
+  const payload = itensAtuais.map(item => ({
+    item_id: item.id,
+    decisao: item.decisao,
+    qtda_aceita: item.qtda_aceita ? parseInt(item.qtda_aceita) : item.qtda_solicitada,
+    codigo_rejeicao: item.codigo_rejeicao || 'AC',
+    motivo: item.motivo_rejeicao || null,
+    data_envio: item.data_envio_prevista || null,
+  }));
+  try {
+    const r = await fetch(`${API}/pedidos/${pedidoAtual.id}/validar`, {
+      method: 'POST',
+      headers: {'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error();
+    toast('Validação salva com sucesso!', 'verde');
+    await carregarPedidos();
+    setTimeout(voltarLista, 1500);
+  } catch {
+    toast('Erro ao salvar validação. Tente novamente.', 'vermelho');
+  }
+}
+
+function voltarLista() {
+  document.getElementById('tela-detalhe').style.display = 'none';
+  document.getElementById('tela-lista').style.display = 'block';
+}
+
+function toast(msg, tipo) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${tipo || ''}`;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3500);
+}
+
+// Init
+if (token && usuario) {
+  entrarApp();
+}
+</script>
+</body>
+</html>
