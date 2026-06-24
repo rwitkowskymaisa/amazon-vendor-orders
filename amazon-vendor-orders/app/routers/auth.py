@@ -13,10 +13,9 @@ def login(body: LoginRequest):
     """Autentica via Supabase Auth e retorna token JWT."""
     db = get_db()
     try:
-        resp = db.auth.sign_in_with_password({"email": body.email, "password": body.password})
+                resp = db.auth.sign_in_with_password({"email": body.email, "password": body.password})
         user = resp.user
         session = resp.session
-        # Busca perfil (role)
         perfil = db.table("perfis").select("*").eq("id", user.id).single().execute()
         return {
             "access_token": session.access_token,
@@ -29,7 +28,8 @@ def login(body: LoginRequest):
             }
         }
     except Exception as e:
-        raise HTTPException(status_code=401, detail="Email ou senha inválidos")
+        print(f"ERRO LOGIN: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=401, detail=f"Erro: {str(e)}")
 
 @router.post("/logout")
 def logout():
